@@ -1,1 +1,1 @@
-"# Python-ja" 
+# Python-ja
