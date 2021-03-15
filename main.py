@@ -5,11 +5,8 @@ version = 0.1
 config = configparser.ConfigParser()
 config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)),"config.ini"),encoding="utf-8")
 
-class pycolor:
-    ACCENT = '\033[01m' #強調
-    FLASH = '\033[05m' #点滅
-    RED_FLASH = '\033[05;41m' #赤背景+点滅
-    ### 色 ###
+class print_color:
+    ### 文字 ###
     black = "\033[30m" #黒
     red = "\033[31m" #赤
     green = "\033[32m" #緑
@@ -20,24 +17,23 @@ class pycolor:
     white = "\033[37m" #白
     bold = "\033[1m" #太字
     underline = "\033[4m" #下線
-    invisible = "\033[08m" #不可視
-
+    flash = "\033[5m" #点滅
+    invisible = "\033[8m" #不可視
+    end_color = "\033[39m" #終了
     ### 背景 ###
-    reverce = "\033[07m"#文字色と背景色を反転
-    bg_black = "\033[40m"#(背景)黒
-    bg_red = "\033[41m"#(背景)赤
-    bg_green = "\033[42m"#(背景)緑
-    bg_yellow = "\033[43m"#(背景)黄
-    bg_blue = "\033[44m"#(背景)青
-    bg_magenta = "\033[45m"#(背景)マゼンタ
-    bg_cyan = "\033[46m"#(背景)シアン
-    bg_white = "\033[47m"#(背景)白
-
-    ### 終了 ###
-    end_color = "\033[39m"#文字色
-    end_bg = "\033[49m" #背景色
-    end = "\033[0m" #すべて
-
+    bg_black = "\033[40m" #黒
+    bg_red = "\033[41m" #赤
+    bg_green = "\033[42m" #緑
+    bg_yellow = "\033[43m" #黄
+    bg_blue = "\033[44m" #青
+    bg_magenta = "\033[45m" #マゼンタ
+    bg_cyan = "\033[46m" #シアン
+    bg_white = "\033[47m" #白
+    end_bg = "\033[49m" #終了
+    ### 文字&背景 ###
+    reverce = "\033[7m" #文字色と背景色を反転
+    red_flash = "\033[5;41m" #赤背景+点滅
+    end = "\033[0m" #終了
 
 def package_list_load():
     global version,config
