@@ -5,10 +5,41 @@ version = 0.1
 config = configparser.ConfigParser()
 config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)),"config.ini"),encoding="utf-8")
 
-class UpdateError(Exception):
-    pass
+class pycolor:
+    ACCENT = '\033[01m' #強調
+    FLASH = '\033[05m' #点滅
+    RED_FLASH = '\033[05;41m' #赤背景+点滅
+    ### 色 ###
+    black = "\033[30m" #黒
+    red = "\033[31m" #赤
+    green = "\033[32m" #緑
+    yellow = "\033[33m" #黄
+    blue = "\033[34m" #青
+    purple = "\033[35m" #紫
+    cyan = "\033[36m" #シアン
+    white = "\033[37m" #白
+    bold = "\033[1m" #太字
+    underline = "\033[4m" #下線
+    invisible = "\033[08m" #不可視
 
-def update():
+    ### 背景 ###
+    reverce = "\033[07m"#文字色と背景色を反転
+    bg_black = "\033[40m"#(背景)黒
+    bg_red = "\033[41m"#(背景)赤
+    bg_green = "\033[42m"#(背景)緑
+    bg_yellow = "\033[43m"#(背景)黄
+    bg_blue = "\033[44m"#(背景)青
+    bg_magenta = "\033[45m"#(背景)マゼンタ
+    bg_cyan = "\033[46m"#(背景)シアン
+    bg_white = "\033[47m"#(背景)白
+
+    ### 終了 ###
+    end_color = "\033[39m"#文字色
+    end_bg = "\033[49m" #背景色
+    end = "\033[0m" #すべて
+
+
+def package_list_load():
     global version,config
     sys.stdout.write("ローカルパッケージリストの読み込み: ")
     with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),config["path"]["package_list"])) as f:
@@ -21,6 +52,19 @@ def update():
         raise UpdateError(f"オンラインパッケージリストにアクセスできませんでした。\n{url} にアクセスできる事を確認してください。")
     pkgo = pkgo.json()
     sys.stdout.write("\rオンラインパッケージリストの読み込み: 完了\n\n")
+    return pkgo,pkgl
+
+
+def show():
+    global version,config
+    
+
+class UpdateError(Exception):
+    pass
+
+def update():
+    global version,config
+    pkgo,pkgl = package_list_load()
     pkgs = []
     for p in pkgl:
         if pkgl[p]["version"] < pkgo[p]["version"]:
