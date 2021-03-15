@@ -1,10 +1,11 @@
 {
-    "ja" : {
-        "version" : 0.05,
-        "author" : "teamtlink",
-        "sources" : "https://teamtlink.github.io/op-pkg/0.1/ja/ja.zip",
-        "requires" : [],
-        "required-by" : [],
-        "description" : "Original Pyを日本語化"
+    "ja": {
+        "name": "ja",
+        "version": 0.1,
+        "author": "teamtlink",
+        "sources": "https://teamtlink.github.io/op-package/0.1/ja/ja.zip",
+        "requires": [],
+        "required-by": [],
+        "description": "Original Py\u3092\u65e5\u672c\u8a9e\u5316"
     }
 }
