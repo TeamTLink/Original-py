@@ -100,7 +100,7 @@ def update():
     if len(pkgs) == 0:
         print("すべてのパッケージが最新バージョンでした。")
         return sys.exit(0)
-    print(f"以下の{len(pkgs)}個のパッケージを更新できます。まとめて更新したくない場合は、[op pkg install パッケージ名]でパッケージを更新してください。\n {' '.join([p['name']+'-v'+str(p['version']) for p in pkgs])}\n")
+    print(f"以下の{len(pkgs)}個のパッケージを更新できます。まとめて更新したくない場合は、[op pkg update パッケージ名]でパッケージを更新してください。\n {' '.join([p['name']+'-v'+str(p['version']) for p in pkgs])}\n")
     ind = input("更新しますか[Y/n]: ")
     if ind not in ["Y","y"]:
         print("\n更新を中止しました。")
@@ -177,7 +177,7 @@ def show(arg1=None,arg2=None):
         sys.stdout.write("読み込み中...")
         if arg1 in pkgo:
             def molding(data):
-                pass
+                return "\n".join([d+": "+str(data[d]) for d in data])
             if arg1 in pkgl:
                 if pkgl[arg1]["version"] != pkgo[arg1]["version"]:
                     sys.stdout.write(f"\rインストールされている {arg1} の詳細:\n{molding(pkgl[arg1])}\n\n最新バージョンの {arg1} の詳細:\n{molding(pkgo[arg1])}\n")
@@ -195,5 +195,5 @@ def _help():
 
 
 version = 0.1
-show("ja")
+update()
 
