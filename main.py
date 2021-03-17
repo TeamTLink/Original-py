@@ -60,7 +60,7 @@ except ModuleNotFoundError as e:
 config = configparser.ConfigParser()
 config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)),"config.ini"),encoding="utf-8")
 if not os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(__file__)),"config.ini")):
-    print(f"{print_color.bg_red}ファイル config.ini が見つかりませんでした。ファイルが {os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'config.ini'))} にあることを確認してください。{print_color.end_bg}")
+    print(f"{print_color.bg_red}ファイル config.ini が見つかりませんでした。ファイルが {os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'config.ini'))} にあることを確認してください。{print_color.end_all}")
     sys.exit(0)
 
 
@@ -86,48 +86,65 @@ def _package_load_():
     return pkgo,pkgl
 
 
+def _download_install_(pkgl,data):
+    sys.stdout.write(f"{data['name']}-v{data['version']} のインストール: ")
+    dataz = requests.get(data["sources"],stream=True)
+    if str(dataz.status_code)[0] != "2":
+        sys.stdout.write(f"\r{data['name']}-v{data['version']} のインストール: {print_color.bg_red}ダウンロードできませんでした。 {data['sources']} にアクセスできる事を確認してください。{print_color.end_all}")
+        return sys.exit(0)
+    sys.stdout.write(f"\r{data['name']}-v{data['version']} のインストール: ダウンロード完了")
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),f"{config['path']['package_folder']}\\{data['name']}.zip"),"wb") as f:
+        for d in dataz.iter_content(chunk_size=1024):
+            f.write(d)
+            f.flush()
+    sys.stdout.write(f"\r{data['name']}-v{data['version']} のインストール: zipファイルの書き込み完了")
+    with zipfile.ZipFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),f"{config['path']['package_folder']}\\{data['name']}.zip")) as filez:
+        filez.extractall(os.path.join(os.path.dirname(os.path.abspath(__file__)),f"{config['path']['package_folder']}\\{data['name']}"))
+    sys.stdout.write(f"\r{data['name']}-v{data['version']} のインストール: zipファイルの展開完了    ")
+    if config["install"]["delete_zip"] == "true":
+        os.remove(os.path.join(os.path.dirname(os.path.abspath(__file__)),f"{config['path']['package_folder']}\\{data['name']}.zip"))
+        sys.stdout.write(f"\r{data['name']}-v{data['version']} のインストール: zipファイルの削除完了")
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),config["path"]["package_list"]),"w") as f:
+        pkgl[data["name"]] = data
+        json.dump(pkgl,f,indent=4)
+    sys.stdout.write(f"\r{data['name']}-v{data['version']} のインストール: 完了                 \n")
+
+
 def install():
     pass
 
 
 #updateコマンド
-def update():
+def update(arg1):
     pkgo,pkgl = _package_load_()
-    pkgs = []
-    for p in pkgl:
-        if pkgl[p]["version"] < pkgo[p]["version"]:
-            pkgs.append(pkgo[p])
-    if len(pkgs) == 0:
-        print("すべてのパッケージが最新バージョンでした。")
-        return sys.exit(0)
-    print(f"以下の{len(pkgs)}個のパッケージを更新できます。まとめて更新したくない場合は、[op pkg update パッケージ名]でパッケージを更新してください。\n {' '.join([p['name']+'-v'+str(p['version']) for p in pkgs])}\n")
-    ind = input("更新しますか[Y/n]: ")
-    if ind not in ["Y","y"]:
-        print("\n更新を中止しました。")
-        return sys.exit(0)
-    for p in pkgs:
-        sys.stdout.write(f"\n{p['name']}-v{p['version']} のインストール: ")
-        dataz = requests.get(p["sources"],stream=True)
-        if str(dataz.status_code)[0] != "2":
-            sys.stdout.write(f"\r{p['name']}-v{p['version']} のインストール: {print_color.bg_red}ダウンロードできませんでした。 {p['sources']} にアクセスできる事を確認してください。{print_color.end_all}")
+    if arg1 in ["--all","-A"]:
+        pkgs = []
+        for p in pkgl:
+            if pkgl[p]["version"] < pkgo[p]["version"]:
+                pkgs.append(pkgo[p])
+        if len(pkgs) == 0:
+            print("すべてのパッケージが最新バージョンでした。")
             return sys.exit(0)
-        sys.stdout.write(f"\r{p['name']}-v{p['version']} のインストール: ダウンロード完了")
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),f"{config['path']['package_folder']}\\{p['name']}.zip"),"wb") as f:
-            for d in dataz.iter_content(chunk_size=1024):
-                f.write(d)
-                f.flush()
-        sys.stdout.write(f"\r{p['name']}-v{p['version']} のインストール: zipファイルの書き込み完了")
-        with zipfile.ZipFile(os.path.join(os.path.dirname(os.path.abspath(__file__)),f"{config['path']['package_folder']}\\{p['name']}.zip")) as filez:
-            filez.extractall(os.path.join(os.path.dirname(os.path.abspath(__file__)),f"{config['path']['package_folder']}\\{p['name']}"))
-        sys.stdout.write(f"\r{p['name']}-v{p['version']} のインストール: zipファイルの展開完了    ")
-        if config["install"]["delete_zip"] == "true":
-            os.remove(os.path.join(os.path.dirname(os.path.abspath(__file__)),f"{config['path']['package_folder']}\\{p['name']}.zip"))
-            sys.stdout.write(f"\r{p['name']}-v{p['version']} のインストール: zipファイルの削除完了")
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),config["path"]["package_list"]),"w") as f:
-            pkgl[p["name"]] = p
-            json.dump(pkgl,f,indent=4)
-        sys.stdout.write(f"\r{p['name']}-v{p['version']} のインストール: 完了                 \n")
-    print("\nすべての更新が完了しました。")
+        print(f"以下の{len(pkgs)}個のパッケージを更新できます。まとめて更新したくない場合は、[op update パッケージ名] でパッケージを更新してください。\n {' '.join([p['name']+'-v'+str(p['version']) for p in pkgs])}\n")
+        ind = input("更新しますか[Y/n]: ")
+        if ind not in ["Y","y"]:
+            print("\n更新を中止しました。")
+            return sys.exit(0)
+        for p in pkgs:
+            _download_install_(pkgl,p)
+        print("\nすべての更新が完了しました。")
+    else:
+        if arg1 in pkgo:
+            if arg1 in pkgl:
+                if pkgl[arg1]["version"] < pkgo[arg1]["version"]:
+                    _download_install_(pkgl,pkgo[arg1])
+                else:
+                    print(f"{print_color.bg_red}パッケージ {arg1} は最新バージョンです。{print_color.end_all}")
+            else:
+                print(f"{print_color.bg_red}パッケージ {arg1} がインストールされていません。[op install {arg1}] でパッケージをインストールしてください。{print_color.end_all}")
+        else:
+            print(f"{print_color.bg_red}パッケージ {arg1} が見つかりませんでした。{print_color.end_all}")
+            return sys.exit(0)
 
 
 def uninstall():
@@ -176,17 +193,17 @@ def show(arg1=None,arg2=None):
         #表示
         sys.stdout.write("読み込み中...")
         if arg1 in pkgo:
-            def molding(data):
+            def _molding_(data):
                 return "\n".join([d+": "+str(data[d]) for d in data])
             if arg1 in pkgl:
                 if pkgl[arg1]["version"] != pkgo[arg1]["version"]:
-                    sys.stdout.write(f"\rインストールされている {arg1} の詳細:\n{molding(pkgl[arg1])}\n\n最新バージョンの {arg1} の詳細:\n{molding(pkgo[arg1])}\n")
+                    sys.stdout.write(f"\rインストールされている {arg1} の詳細:\n{_molding_(pkgl[arg1])}\n\n最新バージョンの {arg1} の詳細:\n{_molding_(pkgo[arg1])}\n")
                 else:
-                    sys.stdout.write(f"\r{arg1} の詳細(インストール済み):\n{molding(pkgl[arg1])}\n")
+                    sys.stdout.write(f"\r{arg1} の詳細(インストール済み):\n{_molding_(pkgl[arg1])}\n")
             else:
-                sys.stdout.write(f"\r{arg1} の詳細(未インストール):\n{molding(pkgo[arg1])}\n")
+                sys.stdout.write(f"\r{arg1} の詳細(未インストール):\n{_molding_(pkgo[arg1])}\n")
         else:
-            sys.stdout.write(f"\r{print_color.bg_red}パッケージ {arg1} が見つかりませんでした。{print_color.end_bg}\n")
+            sys.stdout.write(f"\r{print_color.bg_red}パッケージ {arg1} が見つかりませんでした。{print_color.end_all}\n")
             return sys.exit(0)
 
 
@@ -195,5 +212,4 @@ def _help():
 
 
 version = 0.1
-update()
-
+update("ja")
