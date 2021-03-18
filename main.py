@@ -86,6 +86,7 @@ def _package_load_():
     return pkgo,pkgl
 
 
+#ダウンロードとインストール(コマンドではない)
 def _download_install_(pkgl,data):
     sys.stdout.write(f"{data['name']}-v{data['version']} のインストール: ")
     dataz = requests.get(data["sources"],stream=True)
@@ -254,4 +255,4 @@ def _help():
 
 
 version = 0.1
-uninstall("ja")
+show()
