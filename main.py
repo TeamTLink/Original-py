@@ -45,7 +45,7 @@ class print_color:
 
 
 #標準モジュールの読み込み
-import configparser,json,os,sys,zipfile
+import configparser,json,os,shutil,sys,zipfile
 
 
 #標準で入っていないモジュール
@@ -110,12 +110,28 @@ def _download_install_(pkgl,data):
     sys.stdout.write(f"\r{data['name']}-v{data['version']} のインストール: 完了                 \n")
 
 
-def install():
-    pass
+#インストールコマンド
+def install(arg1=None):
+    if arg1 == None:
+        print(f"{print_color.bg_red}引数1 を指定してください。{print_color.end_all}")
+        return sys.exit(0)
+    pkgo,pkgl = _package_load_()
+    if arg1 in pkgo:
+        if arg1 not in pkgl:
+            _download_install_(pkgl,pkgo[arg1])
+        else:
+            print(f"{print_color.bg_red}パッケージ {arg1} はすでにインストールされています。{print_color.end_all}")
+            return sys.exit(0)
+    else:
+        print(f"{print_color.bg_red}パッケージ {arg1} が見つかりませんでした。{print_color.end_all}")
+        return sys.exit(0)
 
 
-#updateコマンド
-def update(arg1):
+#更新コマンド
+def update(arg1=None):
+    if arg1 == None:
+        print(f"{print_color.bg_red}引数1 を指定してください。{print_color.end_all}")
+        return sys.exit(0)
     pkgo,pkgl = _package_load_()
     if arg1 in ["--all","-A"]:
         pkgs = []
@@ -140,17 +156,40 @@ def update(arg1):
                     _download_install_(pkgl,pkgo[arg1])
                 else:
                     print(f"{print_color.bg_red}パッケージ {arg1} は最新バージョンです。{print_color.end_all}")
+                return sys.exit(0)
             else:
-                print(f"{print_color.bg_red}パッケージ {arg1} がインストールされていません。[op install {arg1}] でパッケージをインストールしてください。{print_color.end_all}")
+                print(f"{print_color.bg_red}パッケージ {arg1} はインストールされていません。{print_color.end_all}")
+                return sys.exit(0)
         else:
             print(f"{print_color.bg_red}パッケージ {arg1} が見つかりませんでした。{print_color.end_all}")
             return sys.exit(0)
 
 
-def uninstall():
-    pass
+#アンインストールコマンド
+def uninstall(arg1=None):
+    if arg1 == None:
+        print(f"{print_color.bg_red}引数1 を指定してください。{print_color.end_all}")
+        return sys.exit(0)
+    _,pkgl = _package_load_()
+    if arg1 in pkgl:
+        sys.stdout.write(f"{arg1}-v{pkgl[arg1]['version']} のアンインストール: ")
+        if os.path.isdir(os.path.join(os.path.dirname(os.path.abspath(__file__)),f"{config['path']['package_folder']}\\{arg1}")):
+            shutil.rmtree(os.path.join(os.path.dirname(os.path.abspath(__file__)),f"{config['path']['package_folder']}\\{arg1}"))
+        else:
+            foldername = os.path.join(os.path.dirname(os.path.abspath(__file__)),f"{config['path']['package_folder']}\\{arg1}")
+            sys.stdout.write(f"\r{arg1}-v{pkgl[arg1]['version']} のアンインストール: {print_color.bg_red}フォルダー {arg1} が見つかりませんでした。ファイルが {foldername} にあることを確認してください。{print_color.end_all}\n")
+            return sys.exit(0)
+        sys.stdout.write(f"\r{arg1}-v{pkgl[arg1]['version']} のアンインストール: フォルダーの削除完了")
+        pkglv = pkgl[arg1]['version']
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),config["path"]["package_list"]),"w") as f:
+            pkgl.pop(arg1)
+            json.dump(pkgl,f,indent=4)
+        sys.stdout.write(f"\r{arg1}-v{pkglv} のアンインストール: 完了                \n")
+    else:
+        print(f"{print_color.bg_red}パッケージ {arg1} はインストールされていません。{print_color.end_all}")
 
 
+#情報表示コマンド
 def show(arg1=None,arg2=None):
     pkgo,pkgl = _package_load_()
     if arg1 == None:
@@ -166,6 +205,9 @@ def show(arg1=None,arg2=None):
         sys.stdout.write(f"\rインストールされているパッケージ:\n {' '.join(pkgy)}\n\nインストールされていないパッケージ:\n {' '.join(pkgn)}\n")
     elif arg1 in ["--search","-S"]:
         #検索
+        if arg2 == None:
+            print(f"{print_color.bg_red}引数2 を指定してください。{print_color.end_all}")
+            return sys.exit(0)
         sys.stdout.write("検索中...")
         pkgy1 = []
         pkgy2 = []
@@ -212,4 +254,4 @@ def _help():
 
 
 version = 0.1
-update("ja")
+uninstall("ja")
